@@ -40,7 +40,10 @@
     "slidev"
   ],
   "scripts": {
-    "start": "npx --yes serve ."
+    "start": "npx --yes serve .",
+    "test": "npm run test:model && npm run test:browser",
+    "test:model": "node --test \"test/model/*.test.js\"",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "animejs": "^4.5.0"
@@ -56,5 +59,11 @@
     "vue": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "vite": "^8.3.5",
+    "vue": "^3.5.44"
   }
 }

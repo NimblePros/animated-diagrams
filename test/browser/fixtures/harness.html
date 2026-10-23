@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Test harness</title>
+  <style>
+    body { margin: 0; }
+    .diagram-player { width: 800px; }
+    .spacer { height: 3000px; }
+  </style>
+</head>
+<body>
+  <script type="module">
+    // Exposes the engine to tests, which drive it with page.evaluate().
+    import * as engine from '/src/index.js';
+    import sample from './sample-diagram.js';
+
+    window.engine = engine;
+    window.sample = sample;
+
+    // Mounts the sample diagram in a new player; { below: true } puts it below the fold.
+    window.mount = async (options = {}, { below = false } = {}) => {
+      const root = document.createElement('div');
+      if (below) {
+        const spacer = document.createElement('div');
+        spacer.className = 'spacer';
+        document.body.append(spacer);
+      }
+      document.body.append(root);
+      window.player = await engine.mountDiagram(sample, root, options);
+      return { stepCount: window.player.stepCount, duration: window.player.timeline.duration };
+    };
+    window.harnessReady = true;
+  </script>
+</body>
+</html>
