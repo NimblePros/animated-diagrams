@@ -21,6 +21,11 @@
 //             'page' would steal Space / Right Arrow from slide navigation).
 //   fonts     A stylesheet URL to load fonts from (e.g. GOOGLE_FONTS_CSS). By default
 //             the bundled fonts are used.
+//   captions  Show captions (true by default). false hides them, for decks where the
+//             presenter narrates, and steps then take only as long as their animation.
+//   autoplay  With `clicks` false: true (default) plays the diagram on slide enter;
+//             false makes it advance one step per click on the diagram (or Step).
+//             Ignored in clicks mode, where each Slidev click already plays one step.
 //
 // Requires @slidev/client, so import it only inside a Slidev deck or theme.
 
@@ -43,6 +48,8 @@ const props = defineProps({
   controls: { default: undefined },
   keyboard: { type: String, default: 'player' },
   fonts: { type: [String, Boolean], default: false },
+  captions: { type: Boolean, default: true },
+  autoplay: { type: Boolean, default: true },
 });
 
 const { $clicksContext, $clicks, $renderContext } = useSlideContext();
@@ -85,8 +92,10 @@ onMounted(async () => {
   player = await mountDiagram(diagram, root.value, {
     keyboard: clickInfo ? 'none' : props.keyboard,
     fonts: props.fonts,
-    autoplay: false,
+    autoplay: !!clickInfo || props.autoplay,
+    startWhenVisible: false,
     controls: props.controls ?? !clickInfo,
+    captions: props.captions,
   });
   if (unmounted) {
     player.destroy();
@@ -98,7 +107,7 @@ onMounted(async () => {
     stopWatching = watch(clickedSteps, (n) => player.showStep(n, { animate: isLive.value }));
   } else if (!isLive.value) {
     player.showStep(player.stepCount);
-  } else {
+  } else if (props.autoplay) {
     // Slidev keeps nearby slides mounted, so start on slide enter, not when mounted.
     stopWatching = watch(isSlideActive, (active) => {
       if (!active) player.pause();

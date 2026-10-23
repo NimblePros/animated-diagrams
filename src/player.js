@@ -7,9 +7,16 @@
 // the player has focus; pass { keyboard: 'page' } to listen page-wide, or
 // { keyboard: 'none' } to leave keys to the host (e.g. Slidev clicks).
 //
-// Autoplay: playback starts the first time the player is half on screen. Pass
-// { autoplay: false } to leave starting it to the host. { controls: false } hides
-// the control bar, for hosts that drive the player themselves.
+// Autoplay: by default the diagram plays through its steps by itself, starting
+// the first time the player is half on screen. { startWhenVisible: false } leaves
+// starting it to the host. { autoplay: false } never advances by itself: each
+// click on the diagram, Space, Right Arrow or Step plays one step, the Play and
+// Pause buttons are hidden and Replay goes back to the start. { controls: false }
+// hides the control bar, for hosts that drive the player themselves.
+//
+// Captions: { captions: false } turns captions off, e.g. for a live presentation
+// where the speaker narrates. The caption box and the read-aloud button are hidden,
+// and steps no longer wait for captions to type or be read.
 //
 // Fonts: `fonts` is the URL of a stylesheet that loads the diagram fonts, Open Sans
 // and Bangers. The default is the copy bundled in fonts/, so no network is needed;
@@ -51,11 +58,16 @@ export async function mountDiagram(diagram, root, {
   keyboard = 'player',
   fonts = DEFAULT_FONTS_CSS,
   autoplay = true,
+  startWhenVisible = true,
   controls = true,
+  captions: showCaptions = true,
 } = {}) {
   root.classList.add('diagram-player');
+  root.classList.toggle('step-by-step', !autoplay);
   root.tabIndex = 0;
-  const keyHelp = keyboard === 'none' ? '' : '; Space to play or pause, Right Arrow to step';
+  const keyHelp = keyboard === 'none' ? ''
+    : autoplay ? '; Space to play or pause, Right Arrow to step'
+      : '; click, Space or Right Arrow to step';
   root.setAttribute('aria-label', `${diagram.title} (animated diagram${keyHelp})`);
   root.innerHTML = `
     <div class="stage"></div>
@@ -73,9 +85,10 @@ export async function mountDiagram(diagram, root, {
     [...root.querySelectorAll('button[data-action]')].map((b) => [b.dataset.action, b]),
   );
   root.querySelector('.controls').hidden = !controls;
+  buttons.play.hidden = buttons.pause.hidden = !autoplay;
   const scrub = root.querySelector('input[type=range]');
   const captionEl = root.querySelector('.captions');
-  captionEl.hidden = !diagram.elements.some((el) => el.caption);
+  captionEl.hidden = !showCaptions || !diagram.elements.some((el) => el.caption);
   const speech = window.speechSynthesis;
   buttons.speak.hidden = captionEl.hidden || !speech;
 
@@ -99,7 +112,7 @@ export async function mountDiagram(diagram, root, {
   let utterance = null;
   let waitingForSpeech = false;
 
-  const { timeline, steps, captions } = buildTimeline(diagram, svg, captionEl, {
+  const { timeline, steps, captions } = buildTimeline(diagram, svg, captionEl.hidden ? null : captionEl, {
     onUpdate: (tl) => {
       scrub.value = Math.round(tl.progress * 1000);
       if (stopAt !== null && tl.currentTime >= stopAt) {
@@ -231,7 +244,11 @@ export async function mountDiagram(diagram, root, {
     stopAt = null;
     stopSpeech();
     shownCaption = -1;
-    timeline.restart();
+    if (autoplay) timeline.restart();
+    else {
+      timeline.pause();
+      timeline.seek(0);
+    }
     syncButtons();
   }
 
@@ -253,7 +270,9 @@ export async function mountDiagram(diagram, root, {
     if (event.target.closest('input, button, textarea, select, a')) return;
     if (event.key === ' ') {
       event.preventDefault();
-      if (isPlaying()) pause();
+      if (!autoplay) {
+        if (!isPlaying()) step();
+      } else if (isPlaying()) pause();
       else play();
     } else if (event.key === 'ArrowRight') {
       event.preventDefault();
@@ -261,6 +280,11 @@ export async function mountDiagram(diagram, root, {
     }
   }
   keyTarget?.addEventListener('keydown', onKeydown);
+  if (!autoplay) {
+    root.querySelector('.stage').addEventListener('click', () => {
+      if (!isPlaying()) step();
+    });
+  }
   let observer = null;
 
   syncButtons();
@@ -268,7 +292,7 @@ export async function mountDiagram(diagram, root, {
     timeline.seek(timeline.duration);
     shownCaption = captions.length - 1;
     syncButtons();
-  } else if (autoplay) {
+  } else if (autoplay && startWhenVisible) {
     // Start once the player is mostly on screen, so embedded diagrams further
     // down a page don't play unseen.
     observer = new IntersectionObserver((entries) => {

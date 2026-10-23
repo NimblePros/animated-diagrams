@@ -193,17 +193,21 @@ In this mode the player's control bar is hidden and it doesn't handle keys itsel
 | `controls` | hidden in click mode | Show the Play / Pause / Step / Replay bar. |
 | `keyboard` | `'player'` | Passed to the player when `clicks` is `false`. Don't use `'page'` in a deck: it would take Space and Right Arrow from slide navigation. |
 | `fonts` | bundled fonts | A stylesheet URL to load the fonts from instead, such as `GOOGLE_FONTS_CSS`. |
+| `captions` | `true` | `false` hides the captions, for a live talk where the presenter narrates. |
+| `autoplay` | `true` | With `:clicks="false"`: `false` makes the diagram advance one step per click on it (or Step) instead of playing on slide enter. Ignored in click mode. |
 
 ```md
 <AnimatedDiagram :diagram="diagram" />                <!-- one click per step -->
 <AnimatedDiagram :diagram="diagram" :clicks="false" /> <!-- plays on slide enter -->
+<AnimatedDiagram :diagram="diagram" :captions="false" /> <!-- no captions -->
+<AnimatedDiagram :diagram="diagram" :clicks="false" :autoplay="false" /> <!-- one step per click on the diagram -->
 ```
 
 Whichever mode is used, the diagram starts on slide enter, not when Slidev mounts the slide (it keeps neighbouring slides mounted while hidden). `animated-diagrams/vue` is the plain Vue component, for Vue apps that aren't Slidev decks; it autoplays when scrolled into view.
 
 ## Using it in Hugo, blogs and plain HTML
 
-`autoload.js` mounts every `<div class="diagram-player" data-diagram="<url>">` on the page. `<url>` is resolved against the page, and `data-keyboard="page"` makes Space and Right Arrow work without focusing the player first.
+`autoload.js` mounts every `<div class="diagram-player" data-diagram="<url>">` on the page. `<url>` is resolved against the page, `data-keyboard="page"` makes Space and Right Arrow work without focusing the player first, `data-captions="false"` turns captions off, and `data-autoplay="false"` makes the diagram advance one step per click or key press.
 
 Because the engine imports anime.js by its bare name (`animejs`), a page without a bundler needs an import map **before** the module script:
 
@@ -258,7 +262,10 @@ export default {
 
 - **Controls:** Play, Pause, Step, Replay, a scrubber, and a speaker toggle (off by default) that reads captions aloud with the browser's speech synthesis. When read-aloud is on, the animation waits for the voice to finish before showing the next caption.
 - **Keyboard:** Space plays or pauses and Right Arrow steps. Keys work while the player has focus; `{ keyboard: 'page' }` / `data-keyboard="page"` listens page-wide, and `{ keyboard: 'none' }` turns keys off.
-- **Autoplay:** playback starts the first time the player is at least half on screen. `{ autoplay: false }` leaves starting it to the host, and `{ controls: false }` hides the control bar.
+- **Autoplay:** by default the diagram plays through its steps by itself, starting the first time the player is at least half on screen. `{ startWhenVisible: false }` leaves starting it to the host. `{ controls: false }` hides the control bar.
+- **Step by step:** `{ autoplay: false }` (`data-autoplay="false"` in HTML, `:autoplay="false"` on either Vue component) never advances by itself. It doesn't start when it scrolls into view, and each click on the diagram, Space, Right Arrow or Step plays exactly one step and stops. Play and Pause are hidden, and Replay goes back to the start without playing. The host API's `play()` still plays through.
+- **End of the diagram:** after the last step the diagram stays on its final frame. Play starts it again from the beginning. There's no looping yet ([#12](https://github.com/NimblePros/animated-diagrams/issues/12)).
+- **Captions:** shown by default. `{ captions: false }` turns them off (`data-captions="false"` in HTML, `:captions="false"` on either Vue component), for example in a live presentation where the speaker narrates the diagram. The caption box and the speaker toggle are hidden, and the timeline is built without captions, so each step takes only as long as its animation instead of waiting for its caption to type and be read.
 - **Reduced motion:** with `prefers-reduced-motion: reduce`, the diagram jumps to its final state.
 - **Fonts:** the player uses Open Sans and Bangers (the callout font), and waits for them to load before rendering, because the renderer measures text. See [Fonts](#fonts).
 - **Host control:** `mountDiagram` resolves to `{ timeline, stepCount, play, pause, showStep, destroy }`. `showStep(n)` shows the diagram as it is after step `n` (`0` is before the first step); `showStep(n, { animate: true })` plays step `n` instead when it's the next one. The Slidev component is built on this.
