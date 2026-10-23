@@ -1,5 +1,7 @@
 # animated-diagrams
 
+[![CI](https://github.com/NimblePros/animated-diagrams/actions/workflows/ci.yml/badge.svg)](https://github.com/NimblePros/animated-diagrams/actions/workflows/ci.yml)
+
 Declarative, step-by-step animated box-and-arrow diagrams rendered as SVG, with typed captions, play/pause/step/replay controls, a scrubber and optional read-aloud. One engine runs in three kinds of hosts:
 
 - **Slidev decks**, through the `<AnimatedDiagram>` Vue component (meant to be re-exported by the [NimblePros Slidev theme](https://github.com/NimblePros/slidev-theme-nimblepros))
@@ -285,6 +287,8 @@ npm test                          # model tests, then browser tests
 
 - **`npm run test:model`** runs [`test/model/`](test/model/) with `node --test`. The model is pure data, so these need no browser.
 - **`npm run test:browser`** runs [`test/browser/`](test/browser/) with Playwright in Chromium: the renderer and animator, the player, `autoload.js` and `AnimatedDiagram.vue`. Playwright starts Vite with [`test/browser/vite.config.js`](test/browser/vite.config.js) to serve the repo, so anime.js, Vue and the fonts all come from the repo and `node_modules`, with no network. The test pages and diagrams are in [`test/browser/fixtures/`](test/browser/fixtures/).
+
+[CI](.github/workflows/ci.yml) runs `node --check` on `src/` and then `npm test` on every pull request to `main` and every push to `main`. It also runs weekly against the newest anime.js 4.x, so a release that breaks the engine shows up early. When a run fails, the Playwright report and traces are uploaded as the `playwright-report` artifact.
 
 ## License
 
