@@ -71,7 +71,7 @@ examples/
 The package is installed from GitHub, pinned to a release tag:
 
 ```sh
-npm i github:NimblePros/animated-diagrams#v0.1.0
+npm i github:NimblePros/animated-diagrams#v0.2.0
 ```
 
 To upgrade, run the same command with the newer tag. If the repo is private, `npm install` needs GitHub access to it, just like the theme.
@@ -219,7 +219,7 @@ Because the engine imports anime.js by its bare name (`animejs`), a page without
 <div class="diagram-player" data-diagram="/diagrams/class-libraries-only.js"></div>
 
 <script type="module"
-        src="https://cdn.jsdelivr.net/gh/NimblePros/animated-diagrams@v0.1.0/src/autoload.js"></script>
+        src="https://cdn.jsdelivr.net/gh/NimblePros/animated-diagrams@v0.2.0/src/autoload.js"></script>
 ```
 
 Notes:
@@ -231,7 +231,7 @@ Notes:
   {
     "imports": {
       "animejs": "https://cdn.jsdelivr.net/npm/animejs@4/+esm",
-      "animated-diagrams/model": "https://cdn.jsdelivr.net/gh/NimblePros/animated-diagrams@v0.1.0/src/diagram-model.js"
+      "animated-diagrams/model": "https://cdn.jsdelivr.net/gh/NimblePros/animated-diagrams@v0.2.0/src/diagram-model.js"
     }
   }
   ```
