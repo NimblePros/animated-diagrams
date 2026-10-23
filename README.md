@@ -10,12 +10,10 @@ The engine is plain ES modules with no build step, about 1,000 lines in total. I
 
 ## Why this is its own repo
 
-The engine started in [`SoftArchFunPrep/diagrams/lib`](https://github.com/ardalis/SoftArchFunPrep/tree/main/diagrams/lib). It was already cleanly split:
-
 - **Engine (this repo):** `diagram-model.js`, `diagram-renderer.js`, `diagram-animator.js`, `player.js`, `diagram.css`, `autoload.js` and `page.css`. It loads its own CSS relative to `import.meta.url`.
 - **Content (stays in each consuming repo):** individual diagram files (`class-libraries-only.js`, ...) and per-topic "kits" such as `cap-kit.js` and `saga-kit.js` that build diagrams from a shorter description. Content files only need `Diagram` from the model.
 
-Keeping the engine in its own versioned package lets every deck, workshop repo and blog use it without copying and pasting. An update to the engine is then just a tag bump in each consumer, the same `npm i github:...#<tag>` workflow the decks already use for the NimblePros theme.
+Keeping the engine in its own versioned package lets every deck, docs site, workshop repo, and blog use it without copying and pasting. An update to the engine is then just a tag bump in each consumer: `npm i github:...#<tag>`.
 
 The intended setup:
 
@@ -83,7 +81,7 @@ export default new Diagram({
   description: 'Orders sends a charge request to Billing.',  // used as the SVG <desc>
   width: 1200,
   height: 400,
-  watermark: { text: 'NimblePros.com' }, // or false; defaults to centered "ModularMonoliths.com"
+  watermark: { text: 'NimblePros.com' }, // or false; defaults to centered "NimblePros.com"
   // stylesheet: new URL('./my-diagram.css', import.meta.url).href,
 
   nodes: [
@@ -236,15 +234,8 @@ export default {
 These were identified while extracting the engine and haven't been done yet:
 
 - [ ] **Slidev keyboard and clicker integration.** Space and Right Arrow are also Slidev's navigation keys. Inside a deck, keep `keyboard: 'player'`. Better still, add a mode where the diagram's steps follow Slidev clicks (watch `$clicks` / `useSlideContext()`, or register `v-click` steps), so a presenter clicker steps through the diagram before moving to the next slide. Autoplay through `IntersectionObserver` may also start diagrams on slides that Slidev keeps mounted but hidden; a Slidev mode should start on slide enter instead.
-- [ ] **Configurable branding.** The Google Fonts URL (`player.js`) and the default watermark text `ModularMonoliths.com` (`diagram-model.js`) are hardcoded. Make them options, with the current values as defaults. Today, kits set `watermark.text` per diagram (`NimblePros.com`).
+- [ ] **Configurable branding.** The Google Fonts URL (`player.js`) and the default watermark text `NimblePros.com` (`diagram-model.js`) are hardcoded. Make them options, with the current values as defaults. Today, kits set `watermark.text` per diagram (`NimblePros.com`).
 - [ ] **Clean up on unmount.** With `keyboard: 'page'`, `mountDiagram` adds a `keydown` listener to `document` that is never removed, and the `IntersectionObserver` isn't disconnected if the player is removed before it plays. Return a `destroy()` from `mountDiagram` and call it from `AnimatedDiagram.vue`.
 - [ ] **Self-hosted fonts** so decks work fully offline.
 - [ ] Choose a license, decide whether the repo is public (needed for jsDelivr), and tag `v0.1.0`.
 
-## Migrating SoftArchFunPrep to this package
-
-In the SoftArchFunPrep repo, which this was extracted from:
-
-1. Install the package (or get it through the theme) in `1day/slides` and `2day/slides`.
-2. Change `import { Diagram } from '../lib/diagram-model.js'` in the diagram and kit files to `'animated-diagrams/model'` (for Slidev), or keep the standalone pages working with an import map.
-3. Delete `diagrams/lib/`, and the temporary `root/` folder this repo was staged in.

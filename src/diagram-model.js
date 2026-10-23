@@ -3,7 +3,7 @@
 // what to draw, where, and in which order (via `step`).
 
 const DEFAULT_ARROW = { length: 16, halfWidth: 8 };
-const DEFAULT_WATERMARK = 'ModularMonoliths.com';
+const DEFAULT_WATERMARK = 'NimblePros.com';
 
 // Any element may carry a `caption`: play-by-play commentary shown while its step plays.
 // A step without a caption keeps the previous caption on screen.
