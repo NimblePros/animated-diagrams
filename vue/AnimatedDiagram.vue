@@ -6,7 +6,8 @@
 //   <AnimatedDiagram :diagram="diagram" />
 //
 // `keyboard` is passed through to the player. Keep the default ('player') in Slidev:
-// 'page' would steal Space / Right Arrow from slide navigation.
+// 'page' would steal Space / Right Arrow from slide navigation. `fonts` is passed
+// through too: a stylesheet URL, or false to skip loading fonts.
 
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { mountDiagram } from '../src/player.js';
@@ -17,22 +18,25 @@ import '../src/diagram.css';
 const props = defineProps({
   diagram: { required: true },
   keyboard: { type: String, default: 'player' },
+  // No `type`, so an absent prop stays undefined (and the player's default applies).
+  fonts: { default: undefined },
 });
 
 const root = ref();
-let timeline;
+let player;
 let unmounted = false;
 
 onMounted(async () => {
   const resolved = await props.diagram;
   const diagram = resolved?.default ?? resolved;
   if (unmounted) return;
-  timeline = await mountDiagram(diagram, root.value, { keyboard: props.keyboard });
+  player = await mountDiagram(diagram, root.value, { keyboard: props.keyboard, fonts: props.fonts });
+  if (unmounted) player.destroy();
 });
 
 onBeforeUnmount(() => {
   unmounted = true;
-  timeline?.pause();
+  player?.destroy();
 });
 </script>
 

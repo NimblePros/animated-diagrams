@@ -3,7 +3,6 @@
 // what to draw, where, and in which order (via `step`).
 
 const DEFAULT_ARROW = { length: 16, halfWidth: 8 };
-const DEFAULT_WATERMARK = 'NimblePros.com';
 
 // Any element may carry a `caption`: play-by-play commentary shown while its step plays.
 // A step without a caption keeps the previous caption on screen.
@@ -114,9 +113,13 @@ export class Reset {
 }
 
 export class Diagram {
+  // Watermark text for diagrams that don't set `watermark.text`. Change it once, before
+  // constructing diagrams, to rebrand every diagram in a site or deck.
+  static defaultWatermark = 'NimblePros.com';
+
   // `arrow` sets the arrowhead size for every edge: { length, halfWidth }.
   // `watermark` ({ text, x, y, fontSize }) is centered by default; any field can be overridden,
-  // and `watermark: false` turns it off.
+  // and `watermark: false` turns it off. The default text is Diagram.defaultWatermark.
   // `id` names the diagram (its folder name); its SVG gets data-diagram="<id>" so a
   // diagram's own `stylesheet` (an absolute URL, loaded by the player) can target it.
   constructor({
@@ -125,7 +128,7 @@ export class Diagram {
   }) {
     Object.assign(this, { id, title, description, width, height, arrow, stylesheet });
     this.watermark = watermark && {
-      text: DEFAULT_WATERMARK,
+      text: Diagram.defaultWatermark,
       x: width / 2,
       y: height / 2,
       ...watermark,

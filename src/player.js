@@ -6,6 +6,13 @@
 // Keyboard: Space plays/pauses, Right Arrow steps. By default keys work while
 // the player has focus; pass { keyboard: 'page' } to listen page-wide.
 //
+// Fonts: `fonts` is the URL of a stylesheet that loads the diagram fonts (Open Sans
+// and Bangers from Google Fonts by default); pass false to skip it, e.g. when the
+// host page already loads its own.
+//
+// Returns { timeline, destroy }. Call destroy() when removing the player: it stops
+// playback and speech and removes the page-wide listener and the autoplay observer.
+//
 // The speaker button (off by default) reads each caption aloud with the
 // browser's built-in speech synthesis as it appears. If the voice is still
 // talking when the next caption is due, the animation waits for it.
@@ -14,7 +21,7 @@ import { renderDiagram } from './diagram-renderer.js';
 import { buildTimeline } from './diagram-animator.js';
 
 const PLAYER_CSS = new URL('./diagram.css', import.meta.url).href;
-const FONTS_CSS =
+export const DEFAULT_FONTS_CSS =
   'https://fonts.googleapis.com/css2?family=Bangers&family=Open+Sans:wght@300..800&display=swap';
 const SPEECH_RATE = 1.2; // a little faster than default, closer to the caption pace
 
@@ -26,7 +33,7 @@ const SPEAKER_ICON = `
     <path class="speaker-muted" d="m16 9 6 6m0-6-6 6"/>
   </svg>`;
 
-export async function mountDiagram(diagram, root, { keyboard = 'player' } = {}) {
+export async function mountDiagram(diagram, root, { keyboard = 'player', fonts = DEFAULT_FONTS_CSS } = {}) {
   root.classList.add('diagram-player');
   root.tabIndex = 0;
   root.setAttribute('aria-label', `${diagram.title} (animated diagram; Space to play or pause, Right Arrow to step)`);
@@ -52,7 +59,7 @@ export async function mountDiagram(diagram, root, { keyboard = 'player' } = {}) 
   buttons.speak.hidden = captionEl.hidden || !speech;
 
   // Rendering reads computed styles and measures text, so styles and fonts must be ready.
-  await Promise.all([PLAYER_CSS, FONTS_CSS, diagram.stylesheet].filter(Boolean).map(loadStylesheet));
+  await Promise.all([PLAYER_CSS, fonts, diagram.stylesheet].filter(Boolean).map(loadStylesheet));
   await document.fonts.ready;
   const svg = renderDiagram(diagram, root.querySelector('.stage'));
 
@@ -196,7 +203,8 @@ export async function mountDiagram(diagram, root, { keyboard = 'player' } = {}) 
     syncButtons();
   });
 
-  (keyboard === 'page' ? document : root).addEventListener('keydown', (event) => {
+  const keyTarget = keyboard === 'page' ? document : root;
+  function onKeydown(event) {
     if (event.target.closest('input, button, textarea, select, a')) return;
     if (event.key === ' ') {
       event.preventDefault();
@@ -206,7 +214,9 @@ export async function mountDiagram(diagram, root, { keyboard = 'player' } = {}) 
       event.preventDefault();
       if (!isPlaying()) step();
     }
-  });
+  }
+  keyTarget.addEventListener('keydown', onKeydown);
+  let observer = null;
 
   syncButtons();
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -216,7 +226,7 @@ export async function mountDiagram(diagram, root, { keyboard = 'player' } = {}) 
   } else {
     // Start once the player is mostly on screen, so embedded diagrams further
     // down a page don't play unseen.
-    const observer = new IntersectionObserver((entries) => {
+    observer = new IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
         observer.disconnect();
         if (timeline.currentTime === 0 && timeline.paused) play();
@@ -225,7 +235,15 @@ export async function mountDiagram(diagram, root, { keyboard = 'player' } = {}) 
     observer.observe(root);
   }
 
-  return timeline;
+  function destroy() {
+    keyTarget.removeEventListener('keydown', onKeydown);
+    observer?.disconnect();
+    stopAt = null;
+    stopSpeech();
+    timeline.pause();
+  }
+
+  return { timeline, destroy };
 }
 
 // Adds a stylesheet to <head> once per page and resolves when it has loaded.
