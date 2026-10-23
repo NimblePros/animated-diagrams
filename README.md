@@ -81,7 +81,7 @@ export default new Diagram({
   description: 'Orders sends a charge request to Billing.',  // used as the SVG <desc>
   width: 1200,
   height: 400,
-  watermark: { text: 'NimblePros.com' }, // or false; defaults to centered "NimblePros.com"
+  watermark: { text: 'NimblePros.com' }, // or false; defaults to centered Diagram.defaultWatermark
   // stylesheet: new URL('./my-diagram.css', import.meta.url).href,
 
   nodes: [
@@ -106,6 +106,8 @@ Element types (see the comments in [`src/diagram-model.js`](src/diagram-model.js
 - **Callout:** a comic-style speech bubble with a `tail` point. `highlights` lists edge ids to turn red (for example, a dependency cycle).
 - **Caption:** a step that only shows commentary.
 - **Reset:** fades out edges and callouts from earlier steps (or only the ids in `only`), so one diagram can show a happy path and then a failure.
+
+To change the default watermark for every diagram in a site or deck, set `Diagram.defaultWatermark = 'Example.com'` once, before the diagrams are constructed.
 
 Any element can have a `caption`. Captions type in word by word, and a step without one keeps the previous caption on screen. A step can't have more than one caption. The model validates ids, steps and references when it's constructed and throws a descriptive error if anything is wrong.
 
@@ -227,15 +229,5 @@ export default {
 - **Keyboard:** Space plays or pauses and Right Arrow steps. Keys work while the player has focus; `{ keyboard: 'page' }` / `data-keyboard="page"` listens page-wide.
 - **Autoplay:** playback starts the first time the player is at least half on screen.
 - **Reduced motion:** with `prefers-reduced-motion: reduce`, the diagram jumps to its final state.
-- **Fonts:** the player loads Open Sans and Bangers (the callout font) from Google Fonts and waits for them before rendering, because the renderer measures text.
-
-## Known issues and roadmap
-
-These were identified while extracting the engine and haven't been done yet:
-
-- [ ] **Slidev keyboard and clicker integration.** Space and Right Arrow are also Slidev's navigation keys. Inside a deck, keep `keyboard: 'player'`. Better still, add a mode where the diagram's steps follow Slidev clicks (watch `$clicks` / `useSlideContext()`, or register `v-click` steps), so a presenter clicker steps through the diagram before moving to the next slide. Autoplay through `IntersectionObserver` may also start diagrams on slides that Slidev keeps mounted but hidden; a Slidev mode should start on slide enter instead.
-- [ ] **Configurable branding.** The Google Fonts URL (`player.js`) and the default watermark text `NimblePros.com` (`diagram-model.js`) are hardcoded. Make them options, with the current values as defaults. Today, kits set `watermark.text` per diagram (`NimblePros.com`).
-- [ ] **Clean up on unmount.** With `keyboard: 'page'`, `mountDiagram` adds a `keydown` listener to `document` that is never removed, and the `IntersectionObserver` isn't disconnected if the player is removed before it plays. Return a `destroy()` from `mountDiagram` and call it from `AnimatedDiagram.vue`.
-- [ ] **Self-hosted fonts** so decks work fully offline.
-- [ ] Choose a license, decide whether the repo is public (needed for jsDelivr), and tag `v0.1.0`.
-
+- **Fonts:** the player loads Open Sans and Bangers (the callout font) from Google Fonts and waits for them before rendering, because the renderer measures text. Pass `{ fonts: '<stylesheet url>' }` (`data-fonts="<url>"`, or the `fonts` prop in Vue) to load them from somewhere else, or `fonts: false` (`data-fonts="none"`) if the page already loads them.
+- **Cleanup:** `mountDiagram` resolves to `{ timeline, destroy }`. Call `destroy()` before removing the player to stop playback and speech and remove its page-wide listeners. `AnimatedDiagram.vue` does this on unmount.
