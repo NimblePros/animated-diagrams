@@ -1,13 +1,15 @@
 <script setup>
-// Vue / Slidev wrapper around mountDiagram. `diagram` is a Diagram, a module whose
+// Vue wrapper around mountDiagram. `diagram` is a Diagram, a module whose
 // default export is a Diagram, or a promise of either (e.g. `import('./x.js')`).
 //
 //   import diagram from './diagrams/class-libraries-only.js'   (in a <script setup> block)
 //   <AnimatedDiagram :diagram="diagram" />
 //
-// `keyboard` is passed through to the player. Keep the default ('player') in Slidev:
-// 'page' would steal Space / Right Arrow from slide navigation. `fonts` is passed
-// through too: a stylesheet URL, or false to skip loading fonts.
+// In a Slidev deck, use SlidevAnimatedDiagram.vue ('animated-diagrams/slidev') instead:
+// its steps follow Slidev clicks and it starts on slide enter.
+//
+// `keyboard` is passed through to the player. `fonts` is passed through too: a
+// stylesheet URL, or false to skip loading fonts.
 
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { mountDiagram } from '../src/player.js';

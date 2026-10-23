@@ -78,6 +78,10 @@
   margin-top: 16px;
 }
 
+.diagram-player .controls[hidden] {
+  display: none;
+}
+
 .diagram-player .controls button {
   font: inherit;
   padding: 6px 16px;
