@@ -2,6 +2,8 @@
 // <url> is a diagram module whose default export is a Diagram. Optional
 // data-keyboard="page" makes Space / Right Arrow work without focusing the player.
 // Optional data-fonts="<url>" replaces the default font stylesheet; data-fonts="none" skips it.
+// Optional data-captions="false" turns captions off, and data-autoplay="false" makes
+// the diagram advance one step per click or key press instead of playing by itself.
 //
 // Used by standalone pages and by the `animated-diagram` Hugo shortcode. The host page
 // needs an import map for `animejs` (see README.md).
@@ -15,6 +17,8 @@ for (const root of document.querySelectorAll('.diagram-player[data-diagram]')) {
     .then(({ default: diagram }) => mountDiagram(diagram, root, {
       keyboard: root.dataset.keyboard,
       fonts: root.dataset.fonts === 'none' ? false : root.dataset.fonts,
+      captions: root.dataset.captions !== 'false',
+      autoplay: root.dataset.autoplay !== 'false',
     }))
     .catch((error) => {
       console.error(`Could not load diagram ${root.dataset.diagram}`, error);

@@ -42,6 +42,11 @@
   padding: 8px;
 }
 
+/* Without autoplay, clicking the diagram plays the next step. */
+.diagram-player.step-by-step .stage {
+  cursor: pointer;
+}
+
 /* Play-by-play commentary. Captions are stacked in one grid cell so the box
    is as tall as the longest caption and never jumps as they change. */
 .diagram-player .captions {

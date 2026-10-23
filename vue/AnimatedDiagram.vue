@@ -10,6 +10,9 @@
 //
 // `keyboard` is passed through to the player. `fonts` is a stylesheet URL to load
 // fonts from (e.g. GOOGLE_FONTS_CSS); by default the bundled fonts are used.
+// `captions` (true by default) shows the caption box; false turns captions off.
+// `autoplay` (true by default) plays the diagram by itself once it's scrolled into
+// view; false makes it advance one step per click or key press.
 
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { mountDiagram } from '../src/player.js';
@@ -24,6 +27,8 @@ const props = defineProps({
   diagram: { required: true },
   keyboard: { type: String, default: 'player' },
   fonts: { type: [String, Boolean], default: false },
+  captions: { type: Boolean, default: true },
+  autoplay: { type: Boolean, default: true },
 });
 
 const root = ref();
@@ -34,7 +39,12 @@ onMounted(async () => {
   const resolved = await props.diagram;
   const diagram = resolved?.default ?? resolved;
   if (unmounted) return;
-  player = await mountDiagram(diagram, root.value, { keyboard: props.keyboard, fonts: props.fonts });
+  player = await mountDiagram(diagram, root.value, {
+    keyboard: props.keyboard,
+    fonts: props.fonts,
+    captions: props.captions,
+    autoplay: props.autoplay,
+  });
   if (unmounted) player.destroy();
 });
 
