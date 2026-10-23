@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Declarative, step-by-step animated box-and-arrow SVG diagrams with captions, for web pages, blogs and Slidev decks.",
+  "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",

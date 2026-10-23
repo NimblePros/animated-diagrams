@@ -218,7 +218,7 @@ Because the engine imports anime.js by its bare name (`animejs`), a page without
 
 Notes:
 
-- **The jsDelivr `gh/` URL only works if this repo is public.** If it stays private, vendor `src/` into the site at build time instead (for example, a Hugo module or a script that copies a tagged release into `static/`).
+- **To avoid depending on a CDN**, vendor `src/` (and `fonts/`) into the site at build time instead, for example with a Hugo module or a script that copies a tagged release into `static/`.
 - **Diagram files on the site** can use the same `import { Diagram } from 'animated-diagrams/model'` as in a deck if the import map maps that name too, so one diagram file works in both places:
 
   ```json
@@ -274,3 +274,7 @@ How the fonts are loaded depends on the host:
 To load the fonts from somewhere else, pass a stylesheet URL as `fonts` (`data-fonts="<url>"` in HTML, or the `fonts` prop in Vue). `GOOGLE_FONTS_CSS`, exported by the package and by `animated-diagrams/player`, is the Google Fonts stylesheet the player used before it bundled its own. If the page already loads the fonts, pass `fonts: false` (`data-fonts="none"`) to skip the stylesheet. The player still waits for the fonts before rendering.
 
 A page that uses the fonts outside the player, such as `page.css`'s body text, can link `fonts/fonts.css` itself, as [`examples/index.html`](examples/index.html) does.
+
+## License
+
+[MIT](LICENSE). The bundled fonts are under the SIL Open Font License 1.1; see [Fonts](#fonts).
