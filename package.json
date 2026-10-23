@@ -10,7 +10,8 @@
   },
   "files": [
     "src",
-    "vue"
+    "vue",
+    "fonts"
   ],
   "exports": {
     ".": "./src/index.js",
@@ -21,6 +22,7 @@
     "./autoload": "./src/autoload.js",
     "./diagram.css": "./src/diagram.css",
     "./page.css": "./src/page.css",
+    "./fonts.css": "./fonts/fonts.css",
     "./vue": "./vue/AnimatedDiagram.vue",
     "./slidev": "./vue/SlidevAnimatedDiagram.vue"
   },

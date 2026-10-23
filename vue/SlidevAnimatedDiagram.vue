@@ -19,7 +19,8 @@
 //             where Slidev's navigation is the control.
 //   keyboard  Passed to the player when `clicks` is false ('player' by default;
 //             'page' would steal Space / Right Arrow from slide navigation).
-//   fonts     Passed to the player: a stylesheet URL, or false to skip loading fonts.
+//   fonts     A stylesheet URL to load fonts from (e.g. GOOGLE_FONTS_CSS). By default
+//             the bundled fonts are used.
 //
 // Requires @slidev/client, so import it only inside a Slidev deck or theme.
 
@@ -29,16 +30,19 @@ import { mountDiagram } from '../src/player.js';
 // Imported statically too, so Vite bundles the styles even if the player's own
 // <link> to diagram.css can't be resolved (see "Using it with Vite" in README.md).
 import '../src/diagram.css';
+// Vite bundles the font files through this import, so the player doesn't load its
+// own copy of fonts.css unless `fonts` names a stylesheet.
+import '../fonts/fonts.css';
 
 const props = defineProps({
   diagram: { required: true },
   clicks: { type: Boolean, default: true },
   at: { type: [String, Number], default: '+1' },
   steps: { type: Number, default: undefined },
-  // No `type`, so absent props stay undefined (and the defaults below or the player's apply).
+  // No `type`, so an absent prop stays undefined (and the default below applies).
   controls: { default: undefined },
   keyboard: { type: String, default: 'player' },
-  fonts: { default: undefined },
+  fonts: { type: [String, Boolean], default: false },
 });
 
 const { $clicksContext, $clicks, $renderContext } = useSlideContext();

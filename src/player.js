@@ -11,9 +11,10 @@
 // { autoplay: false } to leave starting it to the host. { controls: false } hides
 // the control bar, for hosts that drive the player themselves.
 //
-// Fonts: `fonts` is the URL of a stylesheet that loads the diagram fonts (Open Sans
-// and Bangers from Google Fonts by default); pass false to skip it, e.g. when the
-// host page already loads its own.
+// Fonts: `fonts` is the URL of a stylesheet that loads the diagram fonts, Open Sans
+// and Bangers. The default is the copy bundled in fonts/, so no network is needed;
+// pass GOOGLE_FONTS_CSS to use Google Fonts instead, or false to skip it, e.g. when
+// the host page already loads them.
 //
 // Returns { timeline, stepCount, play, pause, showStep, destroy }. showStep(n) shows
 // the diagram as it is after step n (0 = before the first step); with
@@ -29,8 +30,13 @@ import { renderDiagram } from './diagram-renderer.js';
 import { buildTimeline } from './diagram-animator.js';
 
 const PLAYER_CSS = new URL('./diagram.css', import.meta.url).href;
-export const DEFAULT_FONTS_CSS =
+export const BUNDLED_FONTS_CSS = new URL('../fonts/fonts.css', import.meta.url).href;
+export const GOOGLE_FONTS_CSS =
   'https://fonts.googleapis.com/css2?family=Bangers&family=Open+Sans:wght@300..800&display=swap';
+export const DEFAULT_FONTS_CSS = BUNDLED_FONTS_CSS;
+// The faces the renderer measures text in. Fonts only load once something uses them,
+// so these are requested explicitly before rendering.
+const DIAGRAM_FONTS = ['400 16px "Open Sans"', '700 16px "Open Sans"', '16px Bangers'];
 const SPEECH_RATE = 1.2; // a little faster than default, closer to the caption pace
 
 const SPEAKER_ICON = `
@@ -75,6 +81,8 @@ export async function mountDiagram(diagram, root, {
 
   // Rendering reads computed styles and measures text, so styles and fonts must be ready.
   await Promise.all([PLAYER_CSS, fonts, diagram.stylesheet].filter(Boolean).map(loadStylesheet));
+  // A font that fails to load (e.g. offline with Google Fonts) falls back to the next in the stack.
+  await Promise.all(DIAGRAM_FONTS.map((font) => document.fonts.load(font).catch(() => {})));
   await document.fonts.ready;
   const svg = renderDiagram(diagram, root.querySelector('.stage'));
 
