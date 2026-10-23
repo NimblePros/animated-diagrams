@@ -1,0 +1,20 @@
+/* Chrome for standalone diagram pages (see examples/). Not used when a
+   player is embedded in a site page. */
+
+body {
+  margin: 0;
+  padding: 24px 16px;
+  background: #f4f4f2;
+  color: #333333;
+  font-family: 'Open Sans', system-ui, sans-serif;
+}
+
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 16px;
+}

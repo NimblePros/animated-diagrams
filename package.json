@@ -1,0 +1,52 @@
+{
+  "name": "animated-diagrams",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Declarative, step-by-step animated box-and-arrow SVG diagrams with captions, for web pages, blogs and Slidev decks.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NimblePros/animated-diagrams.git"
+  },
+  "files": [
+    "src",
+    "vue"
+  ],
+  "exports": {
+    ".": "./src/index.js",
+    "./model": "./src/diagram-model.js",
+    "./renderer": "./src/diagram-renderer.js",
+    "./animator": "./src/diagram-animator.js",
+    "./player": "./src/player.js",
+    "./autoload": "./src/autoload.js",
+    "./diagram.css": "./src/diagram.css",
+    "./page.css": "./src/page.css",
+    "./vue": "./vue/AnimatedDiagram.vue"
+  },
+  "sideEffects": [
+    "./src/autoload.js",
+    "*.css",
+    "*.vue"
+  ],
+  "keywords": [
+    "diagram",
+    "animation",
+    "svg",
+    "animejs",
+    "slidev"
+  ],
+  "scripts": {
+    "start": "npx --yes serve ."
+  },
+  "dependencies": {
+    "animejs": "^4.5.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
+}

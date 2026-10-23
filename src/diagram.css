@@ -1,0 +1,216 @@
+/* Player and diagram styles. Everything is scoped to .diagram-player so a player
+   can be embedded in any page. A diagram's own stylesheet overrides the variables
+   (and styles node/edge variants) via svg[data-diagram="<id>"]. */
+
+.diagram-player {
+  --ink: #333333;
+  --paper: #ffffff;
+  --red: #c00000;
+
+  --node-fill: var(--paper);
+  --node-stroke: var(--ink);
+  --node-stroke-width: 2.5;
+  --node-font-size: 32px;
+
+  --edge-stroke-width: 2.5;
+  --edge-dash: 3 5;
+  --label-font-size: 17px;
+
+  --watermark-font-size: 56px;
+  --watermark-opacity: 0.08;
+
+  color: var(--ink);
+  font-family: 'Open Sans', system-ui, sans-serif;
+}
+
+.diagram-player *,
+.diagram-player *::before,
+.diagram-player *::after {
+  box-sizing: border-box;
+}
+
+.diagram-player:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+.diagram-player .stage {
+  background: var(--paper);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.08);
+  padding: 8px;
+}
+
+/* Play-by-play commentary. Captions are stacked in one grid cell so the box
+   is as tall as the longest caption and never jumps as they change. */
+.diagram-player .captions {
+  display: grid;
+  align-items: center;
+  min-height: 5.5em;
+  margin-top: 16px;
+  padding: 16px 24px;
+  background: var(--paper);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.08);
+  font-size: 1.35rem;
+  line-height: 1.5;
+}
+
+.diagram-player .captions[hidden] {
+  display: none;
+}
+
+.diagram-player .caption {
+  grid-area: 1 / 1;
+  margin: 0;
+}
+
+.diagram-player .caption-word {
+  opacity: 0;
+}
+
+.diagram-player .controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.diagram-player .controls button {
+  font: inherit;
+  padding: 6px 16px;
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.diagram-player .controls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.diagram-player .controls .speak-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+}
+
+.diagram-player .controls .speak-toggle[hidden] {
+  display: none;
+}
+
+.diagram-player .controls .speak-toggle[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.diagram-player .speak-toggle[aria-pressed='true'] .speaker-muted,
+.diagram-player .speak-toggle[aria-pressed='false'] .speaker-waves {
+  display: none;
+}
+
+.diagram-player .controls input[type='range'] {
+  flex: 1;
+  min-width: 160px;
+  accent-color: var(--red);
+}
+
+/* ---- Diagram ---- */
+
+.diagram-player svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.diagram-player .watermark {
+  font-size: var(--watermark-font-size);
+  font-weight: 700;
+  fill: var(--ink);
+  opacity: var(--watermark-opacity);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Scale/rotate animations pivot around each element's own center. */
+.diagram-player .node,
+.diagram-player .edge-arrow,
+.diagram-player .edge-label,
+.diagram-player .callout {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Everything starts hidden; the timeline reveals it. */
+.diagram-player .node,
+.diagram-player .edge-arrow,
+.diagram-player .edge-label,
+.diagram-player .callout {
+  opacity: 0;
+}
+
+.diagram-player .node rect {
+  fill: var(--node-fill);
+  stroke: var(--node-stroke);
+  stroke-width: var(--node-stroke-width);
+}
+
+.diagram-player .node text {
+  font-size: var(--node-font-size);
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.diagram-player .edge-line {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: var(--edge-stroke-width);
+  stroke-linecap: butt;
+  stroke-linejoin: round;
+}
+
+.diagram-player .edge.dashed .edge-line {
+  stroke-dasharray: var(--edge-dash);
+}
+
+.diagram-player .edge-arrow {
+  fill: var(--ink);
+}
+
+.diagram-player .edge-label .label-bg {
+  fill: var(--paper);
+}
+
+.diagram-player .edge-label text {
+  font-size: var(--label-font-size);
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.diagram-player .callout {
+  transform-origin: 20% 100%; /* grow out of the tail */
+}
+
+.diagram-player .callout path {
+  fill: var(--paper);
+  stroke: var(--red);
+  stroke-width: 9;
+  stroke-linejoin: round;
+}
+
+.diagram-player .callout text {
+  font-family: 'Bangers', 'Impact', sans-serif;
+  font-size: 30px;
+  letter-spacing: 0.5px;
+  fill: #111111;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
