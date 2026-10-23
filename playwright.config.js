@@ -8,9 +8,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? 'github' : 'list',
+  // In CI, the HTML report and the traces (test-results/) are uploaded as artifacts on failure.
+  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: 'http://localhost:5179/test/browser/fixtures/',
+    trace: process.env.CI ? 'retain-on-failure' : 'off',
     ...devices['Desktop Chrome'],
   },
   webServer: {
