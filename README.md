@@ -38,7 +38,8 @@ src/
   diagram.css           Player and diagram styles, scoped to .diagram-player
   page.css              Optional page chrome for standalone pages
 vue/
-  AnimatedDiagram.vue   Vue 3 / Slidev wrapper around mountDiagram()
+  AnimatedDiagram.vue   Vue 3 wrapper around mountDiagram()
+  SlidevAnimatedDiagram.vue  Slidev wrapper whose steps follow Slidev clicks
 examples/
   index.html
   class-libraries-only/ A complete standalone example
@@ -57,6 +58,7 @@ examples/
 | `animated-diagrams/diagram.css` | `src/diagram.css` |
 | `animated-diagrams/page.css` | `src/page.css` |
 | `animated-diagrams/vue` | `vue/AnimatedDiagram.vue` |
+| `animated-diagrams/slidev` | `vue/SlidevAnimatedDiagram.vue` |
 
 ## Installing
 
@@ -119,7 +121,7 @@ Any element can have a `caption`. Captions type in word by word, and a step with
 
 ### Through the NimblePros theme (recommended)
 
-The theme adds the dependency and a component that wraps the one in this package. In `slidev-theme-nimblepros`:
+The theme adds the dependency and a component that wraps the Slidev one in this package. In `slidev-theme-nimblepros`:
 
 1. `npm i github:NimblePros/animated-diagrams#<tag>`
 2. Add `components/AnimatedDiagram.vue`:
@@ -127,7 +129,7 @@ The theme adds the dependency and a component that wraps the one in this package
    ```vue
    <script setup>
    // Animated, captioned SVG diagram. See the animated-diagrams README for authoring diagrams.
-   import AnimatedDiagram from 'animated-diagrams/vue'
+   import AnimatedDiagram from 'animated-diagrams/slidev'
    </script>
 
    <template>
@@ -168,7 +170,30 @@ import diagram from '../diagrams/class-libraries-only.js'
 <AnimatedDiagram :diagram="diagram" />
 ```
 
-`diagram` can be a `Diagram`, a module namespace (its `default` is used), or a promise of either. Dynamic `import()` isn't allowed inside Vue template expressions, so import in `<script setup>` instead.
+`diagram` can be a `Diagram` or a module namespace (its `default` is used). Dynamic `import()` isn't allowed inside Vue template expressions, so import in `<script setup>` instead.
+
+### Clicks and presenter clickers
+
+`animated-diagrams/slidev` registers one Slidev click per diagram step, so Right Arrow, Space, a presenter clicker or the navigation buttons play the diagram one step at a time, and the next click after the last step moves on to the next slide. Going back a click jumps back a step. The diagram's clicks count with the slide's other `v-click`s, so the slide's click total and the presenter view's click counter include them.
+
+In this mode the player's control bar is hidden and it doesn't handle keys itself, because Slidev's navigation drives it. Thumbnails (overview, presenter's next-slide preview) show the matching state without animating.
+
+| Prop | Default | |
+| --- | --- | --- |
+| `diagram` | (required) | A `Diagram` or a module whose default export is one. A promise of either works only with `steps`. |
+| `clicks` | `true` | `false` turns click mode off: the diagram plays by itself when the slide is entered and pauses when it's left. |
+| `at` | `'+1'` | Where the diagram's clicks start, like `v-click`'s `at`: `'+1'` is the next click, a number is absolute. |
+| `steps` | | The diagram's step count, needed only when `diagram` is a promise, because Slidev counts clicks before it resolves. |
+| `controls` | hidden in click mode | Show the Play / Pause / Step / Replay bar. |
+| `keyboard` | `'player'` | Passed to the player when `clicks` is `false`. Don't use `'page'` in a deck: it would take Space and Right Arrow from slide navigation. |
+| `fonts` | Google Fonts | A stylesheet URL, or `false` to skip loading fonts. |
+
+```md
+<AnimatedDiagram :diagram="diagram" />                <!-- one click per step -->
+<AnimatedDiagram :diagram="diagram" :clicks="false" /> <!-- plays on slide enter -->
+```
+
+Whichever mode is used, the diagram starts on slide enter, not when Slidev mounts the slide (it keeps neighbouring slides mounted while hidden). `animated-diagrams/vue` is the plain Vue component, for Vue apps that aren't Slidev decks; it autoplays when scrolled into view.
 
 ## Using it in Hugo, blogs and plain HTML
 
@@ -226,8 +251,9 @@ export default {
 ## Player behavior
 
 - **Controls:** Play, Pause, Step, Replay, a scrubber, and a speaker toggle (off by default) that reads captions aloud with the browser's speech synthesis. When read-aloud is on, the animation waits for the voice to finish before showing the next caption.
-- **Keyboard:** Space plays or pauses and Right Arrow steps. Keys work while the player has focus; `{ keyboard: 'page' }` / `data-keyboard="page"` listens page-wide.
-- **Autoplay:** playback starts the first time the player is at least half on screen.
+- **Keyboard:** Space plays or pauses and Right Arrow steps. Keys work while the player has focus; `{ keyboard: 'page' }` / `data-keyboard="page"` listens page-wide, and `{ keyboard: 'none' }` turns keys off.
+- **Autoplay:** playback starts the first time the player is at least half on screen. `{ autoplay: false }` leaves starting it to the host, and `{ controls: false }` hides the control bar.
 - **Reduced motion:** with `prefers-reduced-motion: reduce`, the diagram jumps to its final state.
 - **Fonts:** the player loads Open Sans and Bangers (the callout font) from Google Fonts and waits for them before rendering, because the renderer measures text. Pass `{ fonts: '<stylesheet url>' }` (`data-fonts="<url>"`, or the `fonts` prop in Vue) to load them from somewhere else, or `fonts: false` (`data-fonts="none"`) if the page already loads them.
-- **Cleanup:** `mountDiagram` resolves to `{ timeline, destroy }`. Call `destroy()` before removing the player to stop playback and speech and remove its page-wide listeners. `AnimatedDiagram.vue` does this on unmount.
+- **Host control:** `mountDiagram` resolves to `{ timeline, stepCount, play, pause, showStep, destroy }`. `showStep(n)` shows the diagram as it is after step `n` (`0` is before the first step); `showStep(n, { animate: true })` plays step `n` instead when it's the next one. The Slidev component is built on this.
+- **Cleanup:** call `destroy()` before removing the player to stop playback and speech and remove its page-wide listeners. Both Vue components do this on unmount.

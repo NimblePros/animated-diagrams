@@ -21,7 +21,8 @@
     "./autoload": "./src/autoload.js",
     "./diagram.css": "./src/diagram.css",
     "./page.css": "./src/page.css",
-    "./vue": "./vue/AnimatedDiagram.vue"
+    "./vue": "./vue/AnimatedDiagram.vue",
+    "./slidev": "./vue/SlidevAnimatedDiagram.vue"
   },
   "sideEffects": [
     "./src/autoload.js",
@@ -42,9 +43,13 @@
     "animejs": "^4.5.0"
   },
   "peerDependencies": {
+    "@slidev/client": ">=0.48.0",
     "vue": "^3.5.0"
   },
   "peerDependenciesMeta": {
+    "@slidev/client": {
+      "optional": true
+    },
     "vue": {
       "optional": true
     }
