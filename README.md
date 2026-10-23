@@ -275,6 +275,17 @@ To load the fonts from somewhere else, pass a stylesheet URL as `fonts` (`data-f
 
 A page that uses the fonts outside the player, such as `page.css`'s body text, can link `fonts/fonts.css` itself, as [`examples/index.html`](examples/index.html) does.
 
+## Testing
+
+```sh
+npm install
+npx playwright install chromium   # once, for the browser tests
+npm test                          # model tests, then browser tests
+```
+
+- **`npm run test:model`** runs [`test/model/`](test/model/) with `node --test`. The model is pure data, so these need no browser.
+- **`npm run test:browser`** runs [`test/browser/`](test/browser/) with Playwright in Chromium: the renderer and animator, the player, `autoload.js` and `AnimatedDiagram.vue`. Playwright starts Vite with [`test/browser/vite.config.js`](test/browser/vite.config.js) to serve the repo, so anime.js, Vue and the fonts all come from the repo and `node_modules`, with no network. The test pages and diagrams are in [`test/browser/fixtures/`](test/browser/fixtures/).
+
 ## License
 
 [MIT](LICENSE). The bundled fonts are under the SIL Open Font License 1.1; see [Fonts](#fonts).
