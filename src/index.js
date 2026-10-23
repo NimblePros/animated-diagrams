@@ -3,6 +3,6 @@
 // when you only need one part.
 
 export { Diagram, Node, Edge, Callout, Caption, Reset } from './diagram-model.js';
-export { mountDiagram } from './player.js';
+export { mountDiagram, BUNDLED_FONTS_CSS, GOOGLE_FONTS_CSS } from './player.js';
 export { renderDiagram, part } from './diagram-renderer.js';
 export { buildTimeline } from './diagram-animator.js';

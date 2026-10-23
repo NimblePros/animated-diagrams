@@ -40,6 +40,9 @@ src/
 vue/
   AnimatedDiagram.vue   Vue 3 wrapper around mountDiagram()
   SlidevAnimatedDiagram.vue  Slidev wrapper whose steps follow Slidev clicks
+fonts/
+  fonts.css             @font-face rules for the bundled Open Sans and Bangers
+  *.woff2, OFL-*.txt    Font files (Latin and Latin Extended) and their licenses
 examples/
   index.html
   class-libraries-only/ A complete standalone example
@@ -57,6 +60,7 @@ examples/
 | `animated-diagrams/animator` | `src/diagram-animator.js` |
 | `animated-diagrams/diagram.css` | `src/diagram.css` |
 | `animated-diagrams/page.css` | `src/page.css` |
+| `animated-diagrams/fonts.css` | `fonts/fonts.css` |
 | `animated-diagrams/vue` | `vue/AnimatedDiagram.vue` |
 | `animated-diagrams/slidev` | `vue/SlidevAnimatedDiagram.vue` |
 
@@ -186,7 +190,7 @@ In this mode the player's control bar is hidden and it doesn't handle keys itsel
 | `steps` | | The diagram's step count, needed only when `diagram` is a promise, because Slidev counts clicks before it resolves. |
 | `controls` | hidden in click mode | Show the Play / Pause / Step / Replay bar. |
 | `keyboard` | `'player'` | Passed to the player when `clicks` is `false`. Don't use `'page'` in a deck: it would take Space and Right Arrow from slide navigation. |
-| `fonts` | Google Fonts | A stylesheet URL, or `false` to skip loading fonts. |
+| `fonts` | bundled fonts | A stylesheet URL to load the fonts from instead, such as `GOOGLE_FONTS_CSS`. |
 
 ```md
 <AnimatedDiagram :diagram="diagram" />                <!-- one click per step -->
@@ -233,7 +237,7 @@ Notes:
 npm start      # serves the repo root
 ```
 
-Then open `http://localhost:3000/examples/`. The examples use the import map above, so they need a network connection for anime.js and the Google fonts.
+Then open `http://localhost:3000/examples/`. The examples use the import map above, so they need a network connection for anime.js. The fonts are served from `fonts/`.
 
 ## Using it with Vite
 
@@ -246,7 +250,7 @@ export default {
 }
 ```
 
-`AnimatedDiagram.vue` also imports `diagram.css` statically, as a backstop. Vite bundles `animejs` as a normal dependency, so a built deck works offline (apart from the Google fonts the player requests).
+`AnimatedDiagram.vue` also imports `diagram.css` statically, as a backstop. Vite bundles `animejs` as a normal dependency, and both Vue components import `fonts/fonts.css` statically so Vite bundles the font files too, so a built deck works fully offline.
 
 ## Player behavior
 
@@ -254,6 +258,19 @@ export default {
 - **Keyboard:** Space plays or pauses and Right Arrow steps. Keys work while the player has focus; `{ keyboard: 'page' }` / `data-keyboard="page"` listens page-wide, and `{ keyboard: 'none' }` turns keys off.
 - **Autoplay:** playback starts the first time the player is at least half on screen. `{ autoplay: false }` leaves starting it to the host, and `{ controls: false }` hides the control bar.
 - **Reduced motion:** with `prefers-reduced-motion: reduce`, the diagram jumps to its final state.
-- **Fonts:** the player loads Open Sans and Bangers (the callout font) from Google Fonts and waits for them before rendering, because the renderer measures text. Pass `{ fonts: '<stylesheet url>' }` (`data-fonts="<url>"`, or the `fonts` prop in Vue) to load them from somewhere else, or `fonts: false` (`data-fonts="none"`) if the page already loads them.
+- **Fonts:** the player uses Open Sans and Bangers (the callout font), and waits for them to load before rendering, because the renderer measures text. See [Fonts](#fonts).
 - **Host control:** `mountDiagram` resolves to `{ timeline, stepCount, play, pause, showStep, destroy }`. `showStep(n)` shows the diagram as it is after step `n` (`0` is before the first step); `showStep(n, { animate: true })` plays step `n` instead when it's the next one. The Slidev component is built on this.
 - **Cleanup:** call `destroy()` before removing the player to stop playback and speech and remove its page-wide listeners. Both Vue components do this on unmount.
+
+## Fonts
+
+The package ships its own copies of Open Sans (variable, weights 300 to 800) and Bangers in [`fonts/`](fonts/), so diagrams render with the right fonts without a network connection. Only the Latin and Latin Extended subsets are included, about 125 KB in all; text in other scripts falls back to the system fonts in `diagram.css`. Both fonts are licensed under the [SIL Open Font License 1.1](https://openfontlicense.org/), which allows bundling and redistributing them; the license texts are in `fonts/OFL-OpenSans.txt` and `fonts/OFL-Bangers.txt`.
+
+How the fonts are loaded depends on the host:
+
+- **Plain pages and `autoload.js`:** the player adds a `<link>` to `fonts/fonts.css`, resolved relative to `player.js`, so it works from a CDN, a vendored copy or `node_modules` alike.
+- **Vue and Slidev:** the components import `animated-diagrams/fonts.css` statically, so Vite copies the font files into the build alongside the deck.
+
+To load the fonts from somewhere else, pass a stylesheet URL as `fonts` (`data-fonts="<url>"` in HTML, or the `fonts` prop in Vue). `GOOGLE_FONTS_CSS`, exported by the package and by `animated-diagrams/player`, is the Google Fonts stylesheet the player used before it bundled its own. If the page already loads the fonts, pass `fonts: false` (`data-fonts="none"`) to skip the stylesheet. The player still waits for the fonts before rendering.
+
+A page that uses the fonts outside the player, such as `page.css`'s body text, can link `fonts/fonts.css` itself, as [`examples/index.html`](examples/index.html) does.
